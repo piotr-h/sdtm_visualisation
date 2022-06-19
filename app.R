@@ -63,15 +63,18 @@ server <- function(input, output) {
   output$gen_choose_category_laboratory <- renderUI({
     selectInput("choose_category_laboratory", "Choose a lab test type", choices=unique(laboratory_data()$LBTEST))
   })
+  
+  laboratory_data_subset <- reactive({
+    laboratory_data() %>% filter(LBTEST==input$choose_category_laboratory) %>%
+      mutate(VISIT=reorder(VISIT, VISITDY))
+  })
 
   output$laboratory_plot <- renderPlot({
-    laboratory_data() %>% filter(LBTEST==input$choose_category_laboratory) %>%
-    mutate(VISIT=reorder(VISIT, VISITDY)) %>%
-    ggplot() + geom_point(aes(x=VISIT, y=LBORRES), size=3)
+    ggplot(laboratory_data_subset()) + geom_point(aes(x=VISIT, y=LBORRES), size=3)
   })
 
   output$laboratory_table <- renderDataTable({
-    brushedPoints(laboratory_data(), input$laboratory_brush) %>% select(LBTEST, LBORRES, LBORRESU, LBORNRLO, LBORNRHI, LBNRIND, LBSPEC, VISIT, VISITDY, LBDTC)
+    brushedPoints(laboratory_data_subset(), input$laboratory_brush) %>% select(LBTEST, LBORRES, LBORRESU, LBORNRLO, LBORNRHI, LBNRIND, LBSPEC, VISIT, VISITDY, LBDTC)
   })
   
   # VITALS
@@ -84,34 +87,40 @@ server <- function(input, output) {
     selectInput("choose_category_vitals", "Choose a vital sign type", choices=unique(vitals_data()$VSTEST))
   })
   
-  output$vitals_plot <- renderPlot({
+  vitals_data_subset <- reactive({
     vitals_data() %>% filter(VSTEST==input$choose_category_vitals) %>%
-      mutate(VISIT=reorder(VISIT, VISITDY)) %>%
-      ggplot() + geom_point(aes(x=VISIT, y=VSORRES), size=3)
+      mutate(VISIT=reorder(VISIT, VISITDY))
+  })
+  
+  output$vitals_plot <- renderPlot({
+      ggplot(vitals_data_subset()) + geom_point(aes(x=VISIT, y=VSORRES), size=3)
   })
   
   output$vitals_table <- renderDataTable({
-    brushedPoints(vitals_data(), input$vitals_brush) %>% select(VSTEST, VSORRES, VSORRESU, VSPOS, VISIT, VISITDY, VSDTC)
+    brushedPoints(vitals_data_subset(), input$vitals_brush) %>% select(VSTEST, VSORRES, VSORRESU, VSPOS, VISIT, VISITDY, VSDTC)
   })
   
   # ECG
   
   ecg_data <- reactive({
-    eg %>% filter(USUBJID == input$subject) %>% mutate(EGTEST=paste0(EGTEST, " (", EGORRESU, ")"))
+    eg %>% filter(USUBJID == input$subject) %>% mutate(EGTEST=paste0(EGTEST, " (", EGSTRESU, ")"))
   })
   
   output$gen_choose_category_ecg <- renderUI({
     selectInput("choose_category_ecg", "Choose ECG measurement type", choices=unique(ecg_data()$EGTEST))
   })
   
-  output$ecg_plot <- renderPlot({
+  ecg_data_subset <- reactive({
     ecg_data() %>% filter(EGTEST==input$choose_category_ecg) %>%
-      mutate(VISIT=reorder(VISIT, VISITDY)) %>%
-      ggplot() + geom_point(aes(x=VISIT, y=EGORRES), size=3)
+      mutate(VISIT=reorder(VISIT, VISITDY))
+  })
+  
+  output$ecg_plot <- renderPlot({
+      ggplot(ecg_data_subset()) + geom_point(aes(x=VISIT, y=EGSTRESC), size=3)
   })
   
   output$ecg_table <- renderDataTable({
-    brushedPoints(ecg_data(), input$ecg_brush) %>% select(EGTEST, EGORRES, EGORRESU, EGPOS, VISIT, VISITDY, EGDTC)
+    brushedPoints(ecg_data_subset(), input$ecg_brush) %>% select(EGTEST, EGSTRESC, EGSTRESU, EGPOS, VISIT, VISITDY, EGDTC)
   })
   
   # AE
