@@ -6,6 +6,7 @@ dm <- read_csv('source_files/dm.csv')
 lb <- read_csv('source_files/lb.csv')
 vs <- read_csv('source_files/vs.csv')
 eg <- read_csv('source_files/eg.csv')
+ae <- read_csv('source_files/ae.csv')
 mh <- read_csv('source_files/mh.csv')
 
 ui <- fluidPage(
